@@ -1,14 +1,12 @@
 <div align="center">
-    <h1 align="center">Self-host LLMs with SGLang and BentoML</h1>
+    <h1 align="center">Self-host Llama 3.1 8B with SGLang and BentoML</h1>
 </div>
 
-This repository contains a group of BentoML example projects, showing you how to serve and deploy open-source LLMs using [SGLang](https://github.com/sgl-project/sglang), a fast serving framework for LLMs and VLMs.
+This example demonstrates how to serve and deploy Llama 3.1 8B using [SGLang](https://github.com/sgl-project/sglang), a fast serving framework for LLMs and VLMs.
 
-💡 You can use these examples as bases for advanced code customization. For simple LLM hosting with OpenAI-compatible endpoints without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
+💡 You can use this example as a base for advanced code customization. For simple LLM hosting with OpenAI-compatible endpoints without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 See [here](https://docs.bentoml.com/en/latest/use-cases/index.html) for a full list of BentoML example projects.
-
-The following is an example of serving one of the LLMs in this repository: Llama 3.1 8B.
 
 ## Prerequisites
 
