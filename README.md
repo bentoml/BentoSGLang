@@ -6,7 +6,7 @@ This repository contains a group of BentoML example projects, showing you how to
 
 💡 You can use these examples as bases for advanced code customization. For simple LLM hosting with OpenAI-compatible endpoints without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
-See [here](https://docs.bentoml.com/en/latest/use-cases/index.html) for a full list of BentoML example projects.
+See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 The following is an example of serving one of the LLMs in this repository: Llama 3.1 8B.
 
