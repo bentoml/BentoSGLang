@@ -5,6 +5,9 @@ import bentoml
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
 
+import fastapi
+openai_api_app = fastapi.FastAPI()
+
 MAX_MODEL_LEN = 4096
 MAX_TOKENS = 1024
 
@@ -15,6 +18,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
 
+@bentoml.mount_asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
     name="bentosglang-llama3.1-8b-instruct-service",
     traffic={
@@ -40,10 +44,39 @@ class SGL:
 
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 
+        # OpenAI endpoints
+        from fastapi import Request
+        from fastapi.responses import ORJSONResponse
+        from sglang.srt.openai_api.adapter import (
+            v1_chat_completions,
+            v1_completions,
+        )
+        from sglang.srt.openai_api.protocol import ModelCard, ModelList
+        from sglang.srt.server import tokenizer_manager
+
+        @openai_api_app.post("/completions")
+        async def openai_v1_completions(raw_request: Request):
+            return await v1_completions(tokenizer_manager, raw_request)
+
+
+        @openai_api_app.post("/chat/completions")
+        async def openai_v1_chat_completions(raw_request: Request):
+            return await v1_chat_completions(tokenizer_manager, raw_request)
+
+        @openai_api_app.get("/models", response_class=ORJSONResponse)
+        def available_models():
+            """Show available models."""
+            served_model_names = [tokenizer_manager.served_model_name]
+            model_cards = []
+            for served_model_name in served_model_names:
+                model_cards.append(ModelCard(id=served_model_name, root=served_model_name))
+            return ModelList(data=model_cards)
+
+
     @bentoml.on_shutdown
     def shutdown(self):
-        from sglang.srt.utils import kill_child_process
-        kill_child_process()
+        self.engine.shutdown()
+
 
     @bentoml.api
     async def generate(
