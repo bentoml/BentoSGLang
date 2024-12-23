@@ -6,7 +6,7 @@ This example demonstrates how to serve and deploy Llama 3.1 8B using [SGLang](ht
 
 💡 You can use this example as a base for advanced code customization. For simple LLM hosting with OpenAI-compatible endpoints without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
-See [here](https://docs.bentoml.com/en/latest/use-cases/index.html) for a full list of BentoML example projects.
+See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 ## Prerequisites
 
