@@ -22,7 +22,7 @@ cd BentoSGLang/llama4-scout-instruct
 # Recommend Python 3.11
 pip install -r requirements.txt
 
-export HF_TOEKN=<your-api-key>
+export HF_TOKEN=<your-api-key>
 ```
 
 ## Run the BentoML Service
@@ -30,7 +30,7 @@ export HF_TOEKN=<your-api-key>
 We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
 
 ```bash
-$ bentoml serve service:SGL
+$ bentoml serve
 
 2025-04-07T02:47:06+0000 [INFO] [cli] Starting production HTTP BentoServer from "service:SGL" listening on http://localhost:3000 (Press CTRL+C to quit)
 ```
@@ -120,4 +120,4 @@ bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
 bentoml deploy --secret huggingface
 ```
 
-**Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/guides/containerization.html).
+**Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/get-started/packaging-for-deployment.html).
