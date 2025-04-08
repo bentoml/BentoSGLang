@@ -9,8 +9,8 @@ from typing_extensions import Annotated
 import fastapi
 openai_api_app = fastapi.FastAPI()
 
-MAX_SESSION_LEN = int(os.environ.get("MAX_SESSION_LEN", 2*1024))
-MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 1*1024))
+MAX_SESSION_LEN = int(os.environ.get("MAX_SESSION_LEN", 8*1024))
+MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 4*1024))
 NUM_GPUS = int(os.environ.get("NUM_GPUS", 4))
 
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
@@ -30,8 +30,8 @@ runtime_image = bentoml.images.PythonImage(
     name="bentosglang-llama4-scout-instruct-service",
     image=runtime_image,
     envs=[
-        {"name": "MAX_SESSION_LEN", "value": f"{2*1024}"},
-        {"name": "MAX_TOKENS", "value": f"{1*1024}"},
+        {"name": "MAX_SESSION_LEN", "value": f"{8*1024}"},
+        {"name": "MAX_TOKENS", "value": f"{4*1024}"},
         {"name": "NUM_GPUS", "value": "4"},
         {"name": "UV_INDEX_STRATEGY", "value": "unsafe-best-match"},
         {"name": "HF_TOKEN"},
@@ -126,6 +126,8 @@ class SGL:
             prompt, sampling_params=sampling_params, stream=True
         )
 
+        cursor = 0
         async for request_output in stream:
-            text = request_output["text"]
+            text = request_output["text"][cursor:]
+            cursor += len(text)
             yield text
