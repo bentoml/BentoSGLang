@@ -1,5 +1,5 @@
 --find-links https://flashinfer.ai/whl/cu124/torch2.5/flashinfer-python
-bentoml==1.4.7
+bentoml==1.4.8
 sglang[all]==0.4.5
 flashinfer-python
 
