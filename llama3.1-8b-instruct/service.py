@@ -17,9 +17,10 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
-runtime_image = bentoml.images.PythonImage(python_version="3.11")\
-                              .requirements_file("requirements.txt")
-
+sys_pkg_cmd = "apt-get -y update && apt-get -y install git python3-pip"
+runtime_image = bentoml.images.PythonImage(
+    base_image="docker.io/nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04",
+).run(sys_pkg_cmd).requirements_file("requirements.txt")
 
 @bentoml.mount_asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
@@ -115,6 +116,8 @@ class SGL:
             prompt, sampling_params=sampling_params, stream=True
         )
 
+        cursor = 0
         async for request_output in stream:
-            text = request_output["text"]
+            text = request_output["text"][cursor:]
+            cursor += len(text)
             yield text
