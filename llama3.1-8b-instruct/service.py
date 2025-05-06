@@ -18,7 +18,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
 sys_pkg_cmd = "apt-get -y update && apt-get -y install git python3-pip"
-runtime_image = bentoml.images.PythonImage(
+runtime_image = bentoml.images.Image(
     base_image="docker.io/nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04",
 ).run(sys_pkg_cmd).requirements_file("requirements.txt")
 
@@ -38,7 +38,10 @@ runtime_image = bentoml.images.PythonImage(
 )
 class SGL:
 
-    hf_model = bentoml.models.HuggingFaceModel(MODEL_ID)
+    hf_model = bentoml.models.HuggingFaceModel(
+        MODEL_ID,
+        exclude=['*.pth', '*.pt', 'original/**/*'],
+    )
 
     def __init__(self) -> None:
         from transformers import AutoTokenizer
