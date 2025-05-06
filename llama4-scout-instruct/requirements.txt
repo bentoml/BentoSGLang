@@ -1,6 +1,2 @@
---find-links https://flashinfer.ai/whl/cu124/torch2.5/flashinfer-python
-bentoml==1.4.7
-sglang[all]==0.4.5
-flashinfer-python
-
-
+bentoml==1.4.12
+sglang[all]==0.4.6.post2

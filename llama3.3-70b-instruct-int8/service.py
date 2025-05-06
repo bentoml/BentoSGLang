@@ -9,8 +9,8 @@ from typing_extensions import Annotated
 import fastapi
 openai_api_app = fastapi.FastAPI()
 
-MAX_SESSION_LEN = int(os.environ.get("MAX_SESSION_LEN", 32*1024))
-MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 16*1024))
+MAX_SESSION_LEN = int(os.environ.get("MAX_SESSION_LEN", 8*1024))
+MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 4*1024))
 NUM_GPUS = int(os.environ.get("NUM_GPUS", 2))
 
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
@@ -19,17 +19,19 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 MODEL_ID = "neuralmagic/Meta-Llama-3.1-70B-Instruct-quantized.w8a8"
 
-runtime_image = bentoml.images.PythonImage(python_version="3.11")\
-                              .requirements_file("requirements.txt")
-
+sys_pkg_cmd = "apt-get -y update && apt-get -y install libopenmpi-dev git python3-pip"
+runtime_image = bentoml.images.Image(
+    base_image="docker.io/nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04",
+    lock_python_packages=False,
+).run(sys_pkg_cmd).requirements_file("requirements.txt")
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    name="bentosglang-llama3.1-70b-instruct-int8-service",
+    name="bentosglang-llama3.3-70b-instruct-int8-service",
     image=runtime_image,
     envs=[
-        {"name": "MAX_SESSION_LEN", "value": f"{32*1024}"},
-        {"name": "MAX_TOKENS", "value": f"{16*1024}"},
+        {"name": "MAX_SESSION_LEN", "value": f"{8*1024}"},
+        {"name": "MAX_TOKENS", "value": f"{4*1024}"},
         {"name": "NUM_GPUS", "value": "2"}
     ],
     traffic={
@@ -43,7 +45,10 @@ runtime_image = bentoml.images.PythonImage(python_version="3.11")\
 )
 class SGL:
 
-    hf_model = bentoml.models.HuggingFaceModel(MODEL_ID)
+    hf_model = bentoml.models.HuggingFaceModel(
+        MODEL_ID,
+        exclude=['*.pth', '*.pt', 'original/**/*'],
+    )
 
     def __init__(self) -> None:
         from transformers import AutoTokenizer
@@ -62,7 +67,7 @@ class SGL:
             server_args=server_args
         )
 
-        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.hf_model)
 
         # OpenAI endpoints
         from fastapi import Request
@@ -122,6 +127,8 @@ class SGL:
             prompt, sampling_params=sampling_params, stream=True
         )
 
+        cursor = 0
         async for request_output in stream:
-            text = request_output["text"]
+            text = request_output["text"][cursor:]
+            cursor += len(text)
             yield text
