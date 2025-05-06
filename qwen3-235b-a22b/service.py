@@ -9,15 +9,15 @@ from typing_extensions import Annotated
 import fastapi
 openai_api_app = fastapi.FastAPI()
 
-MAX_SESSION_LEN = int(os.environ.get("MAX_SESSION_LEN", 8*1024))
-MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 4*1024))
-NUM_GPUS = int(os.environ.get("NUM_GPUS", 8))
+MAX_SESSION_LEN = int(os.environ.get("MAX_SESSION_LEN", 32*1024))
+MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 16*1024))
+NUM_GPUS = int(os.environ.get("NUM_GPUS", 4))
 
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
 
-MODEL_ID = "Qwen/Qwen3-235B-A22B"
+MODEL_ID = "Qwen/Qwen3-235B-A22B-FP8"
 
 sys_pkg_cmd = "apt-get -y update && apt-get -y install libopenmpi-dev git python3-pip"
 runtime_image = bentoml.images.Image(
@@ -27,11 +27,11 @@ runtime_image = bentoml.images.Image(
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    name="bentosglang-qwen3-235b-a22b-service",
+    name="bentosglang-qwen3-235b-a22b-fp8-service",
     image=runtime_image,
     envs=[
-        {"name": "MAX_SESSION_LEN", "value": f"{8*1024}"},
-        {"name": "MAX_TOKENS", "value": f"{4*1024}"},
+        {"name": "MAX_SESSION_LEN", "value": f"{32*1024}"},
+        {"name": "MAX_TOKENS", "value": f"{16*1024}"},
         {"name": "NUM_GPUS", "value": str(NUM_GPUS)},
         {"name": "UV_INDEX_STRATEGY", "value": "unsafe-best-match"},
     ],
@@ -41,7 +41,7 @@ runtime_image = bentoml.images.Image(
     },
     resources={
         "gpu": NUM_GPUS,
-        "gpu_type": "nvidia-a100-80gb",
+        "gpu_type": "nvidia-h100-80gb",
     },
 )
 class SGL:
