@@ -30,9 +30,9 @@ runtime_image = bentoml.images.Image(
     name="bentosglang-llama3.3-70b-instruct-int8-service",
     image=runtime_image,
     envs=[
-        {"name": "MAX_SESSION_LEN", "value": f"{8*1024}"},
-        {"name": "MAX_TOKENS", "value": f"{4*1024}"},
-        {"name": "NUM_GPUS", "value": "2"}
+        {"name": "MAX_SESSION_LEN", "value": f"{MAX_SESSION_LEN}"},
+        {"name": "MAX_TOKENS", "value": f"{MAX_TOKENS}"},
+        {"name": "NUM_GPUS", "value": f"{NUM_GPUS}"}
     ],
     traffic={
         "timeout": 150,
