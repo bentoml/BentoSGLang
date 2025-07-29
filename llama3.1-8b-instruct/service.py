@@ -15,8 +15,7 @@ SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always an
 
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
 
-#MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-MODEL_ID = "meta-llama/Llama-3.2-1B-Instruct"
+MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
 sys_pkg_cmd = "apt-get -y update && apt-get -y install git python3-pip"
 runtime_image = bentoml.images.Image(
