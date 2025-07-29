@@ -19,7 +19,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 MODEL_ID = "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
 
-sys_pkg_cmd = "apt-get -y update && apt-get -y install libopenmpi-dev git python3-pip"
+sys_pkg_cmd = "apt-get -y update && apt-get -y install libopenmpi-dev git python3-pip libnuma-dev"
 runtime_image = bentoml.images.Image(
     base_image="docker.io/nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04",
     lock_python_packages=False,
