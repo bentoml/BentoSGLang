@@ -15,7 +15,8 @@ SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always an
 
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
 
-MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+#MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+MODEL_ID = "meta-llama/Llama-3.2-1B-Instruct"
 
 sys_pkg_cmd = "apt-get -y update && apt-get -y install git python3-pip"
 runtime_image = bentoml.images.Image(
@@ -47,6 +48,18 @@ class SGL:
         from transformers import AutoTokenizer
         import sglang as sgl
         from sglang.srt.server_args import ServerArgs
+        from fastapi import Request
+        from fastapi.responses import ORJSONResponse
+        from sglang.srt.entrypoints.openai.protocol import (
+            ChatCompletionRequest,
+            CompletionRequest,
+            ModelCard,
+            ModelList,
+        )
+        from sglang.srt.entrypoints.openai.serving_chat import OpenAIServingChat
+        from sglang.srt.entrypoints.openai.serving_completions import (
+            OpenAIServingCompletion,
+        )
 
         server_args = ServerArgs(
             model_path=self.hf_model,
@@ -62,22 +75,22 @@ class SGL:
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 
         # OpenAI endpoints
-        from fastapi import Request
-        from fastapi.responses import ORJSONResponse
-        from sglang.srt.openai_api.adapter import (
-            v1_chat_completions,
-            v1_completions,
+        openai_serving_completion = OpenAIServingCompletion(
+            self.engine.tokenizer_manager, self.engine.template_manager
         )
-        from sglang.srt.openai_api.protocol import ModelCard, ModelList
+        openai_serving_chat = OpenAIServingChat(
+            self.engine.tokenizer_manager, self.engine.template_manager
+        )
 
         @openai_api_app.post("/completions")
-        async def openai_v1_completions(raw_request: Request):
-            return await v1_completions(self.engine.tokenizer_manager, raw_request)
-
+        async def openai_v1_completions(request: CompletionRequest, raw_request: Request):
+            return await openai_serving_completion.handle_request(request, raw_request)
 
         @openai_api_app.post("/chat/completions")
-        async def openai_v1_chat_completions(raw_request: Request):
-            return await v1_chat_completions(self.engine.tokenizer_manager, raw_request)
+        async def openai_v1_chat_completions(
+            request: ChatCompletionRequest, raw_request: Request
+        ):
+            return await openai_serving_chat.handle_request(request, raw_request)
 
         @openai_api_app.get("/models", response_class=ORJSONResponse)
         def available_models():
@@ -85,7 +98,13 @@ class SGL:
             served_model_names = [self.engine.tokenizer_manager.served_model_name]
             model_cards = []
             for served_model_name in served_model_names:
-                model_cards.append(ModelCard(id=served_model_name, root=served_model_name))
+                model_cards.append(
+                    ModelCard(
+                        id=served_model_name,
+                        root=served_model_name,
+                        max_model_len=self.engine.tokenizer_manager.model_config.context_len,
+                    )
+                )
             return ModelList(data=model_cards)
 
 
