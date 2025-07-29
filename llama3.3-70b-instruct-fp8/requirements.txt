@@ -1,0 +1,2 @@
+bentoml>=1.4.17
+sglang[all]==0.4.9.post2
