@@ -3,6 +3,7 @@ import typing as t
 from typing import AsyncGenerator, Optional
 
 import bentoml
+import httpx
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
 
@@ -12,6 +13,7 @@ openai_api_app = fastapi.FastAPI()
 MAX_SESSION_LEN = int(os.environ.get("MAX_SESSION_LEN", 32*1024))
 MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 16*1024))
 NUM_GPUS = int(os.environ.get("NUM_GPUS", 1))
+PORT = int(os.environ.get("PORT", "3000"))
 
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
@@ -54,6 +56,7 @@ class SGL:
         from transformers import AutoTokenizer
         import sglang as sgl
         from sglang.srt.server_args import ServerArgs
+        from sglang.srt.utils import add_prometheus_middleware
 
         server_args = ServerArgs(
             model_path=self.hf_model,
@@ -62,6 +65,7 @@ class SGL:
             context_length=MAX_SESSION_LEN,
             mem_fraction_static=0.85,
             tp_size=NUM_GPUS,
+            enable_metrics=True,
         )
         self.engine = sgl.Engine(
             server_args=server_args
@@ -115,6 +119,8 @@ class SGL:
                 )
             return ModelList(data=model_cards)
 
+        add_prometheus_middleware(openai_api_app)
+
 
     @bentoml.on_shutdown
     def shutdown(self):
@@ -151,3 +157,8 @@ class SGL:
             text = request_output["text"][cursor:]
             cursor += len(text)
             yield text
+
+    async def __metrics__(self, original_metrics: str) -> str:
+        async with httpx.AsyncClient() as client:
+            sglang = (await client.get(f"http://127.0.0.1:{PORT}/v1/metrics")).text
+        return f"{original_metrics}{sglang}"
