@@ -6,8 +6,6 @@ This example demonstrates how to serve and deploy Llama 3.1 8B using [SGLang](ht
 
 💡 You can use this example as a base for advanced code customization. For simple LLM hosting with OpenAI-compatible endpoints without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
-See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
-
 ## Prerequisites
 
 - You have gained access to Llama 3.1 8B on [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct).
@@ -104,22 +102,4 @@ for chunk in chat_completion:
 
 </details>
 
-## Deploy to BentoCloud
-
-After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. [Sign up](https://www.bentoml.com/) if you haven't got a BentoCloud account.
-
-Make sure you have [logged in to BentoCloud](hhttps://docs.bentoml.com/en/latest/scale-with-bentocloud/manage-api-tokens.html).
-
-```bash
-bentoml cloud login
-```
-
-Create a BentoCloud secret to store the required environment variable and reference it for deployment.
-
-```bash
-bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
-
-bentoml deploy --secret huggingface
-```
-
-**Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/get-started/packaging-for-deployment.html).
+For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/get-started/packaging-for-deployment.html).
